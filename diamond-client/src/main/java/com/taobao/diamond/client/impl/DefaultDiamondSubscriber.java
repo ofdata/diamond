@@ -671,10 +671,12 @@ class DefaultDiamondSubscriber implements DiamondSubscriber {
         if (null == cacheData) {
             cacheData = new CacheData(dataId, group);
             ConcurrentHashMap<String, CacheData> newCacheDatas = new ConcurrentHashMap<String, CacheData>();
+            // 从这段代码来看一个应用应该只有一个dataId，否则不会直接这么覆盖代码。
             ConcurrentHashMap<String, CacheData> oldCacheDatas = this.cache.putIfAbsent(dataId, newCacheDatas);
             if (null == oldCacheDatas) {
                 oldCacheDatas = newCacheDatas;
             }
+            // 这里再次进行判断，说明存在并行调用情况，在尽量规避。
             if (null != oldCacheDatas.putIfAbsent(group, cacheData)) {
                 cacheData = oldCacheDatas.get(group);
             }
